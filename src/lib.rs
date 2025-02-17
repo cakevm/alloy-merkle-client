@@ -1,6 +1,4 @@
-use alloy_consensus::{
-    Signed, TxEip1559, TxEip2930, TxEip4844, TxEip4844Variant, TxEip7702, TxEnvelope, TxLegacy, TxType,
-};
+use alloy_consensus::{Signed, TxEip1559, TxEip2930, TxEip4844, TxEip4844Variant, TxEip7702, TxEnvelope, TxLegacy, TxType};
 use alloy_primitives::Bytes;
 use alloy_primitives::{Address, ChainId, PrimitiveSignature, TxHash, TxKind, U256};
 use alloy_rpc_types_eth::{AccessList, Transaction};

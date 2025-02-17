@@ -3,6 +3,7 @@ allow = [
   # permissive licenses
   "Apache-2.0",
   "BSL-1.0",
+  "BSD-3-Clause",
   "MIT",
   "Unlicense",
   "Unicode-3.0",
