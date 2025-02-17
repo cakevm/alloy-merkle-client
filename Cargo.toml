@@ -21,3 +21,4 @@ eyre = "0.6.12"
 futures-util = "0.3.31"
 tokio = { version = "1.43.0", features = ["full"] }
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+alloy-network = "0.11.1"

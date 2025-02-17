@@ -1,4 +1,6 @@
-use alloy_consensus::{SignableTransaction, TxEip1559, TxEip2930, TxEip4844, TxEip4844Variant, TxEip7702, TxEnvelope, TxLegacy, TxType};
+use alloy_consensus::{
+    Signed, TxEip1559, TxEip2930, TxEip4844, TxEip4844Variant, TxEip7702, TxEnvelope, TxLegacy, TxType,
+};
 use alloy_primitives::Bytes;
 use alloy_primitives::{Address, ChainId, PrimitiveSignature, TxHash, TxKind, U256};
 use alloy_rpc_types_eth::{AccessList, Transaction};
@@ -40,78 +42,79 @@ pub struct MerkleTxAuction {
 }
 
 impl From<MerkleTx> for Transaction<TxEnvelope> {
-    fn from(tx: MerkleTx) -> Self {
-        let tx_envelop = match tx.tx_type {
-            TxType::Legacy => TxEnvelope::Legacy(
-                TxLegacy {
-                    chain_id: Some(tx.chain_id),
-                    nonce: tx.nonce,
-                    gas_price: tx.gas_price.to::<u128>(),
-                    gas_limit: tx.gas,
-                    to: TxKind::from(tx.to),
-                    value: tx.value,
-                    input: tx.data,
-                }
-                .into_signed(PrimitiveSignature::new(U256::ZERO, U256::ZERO, false)),
-            ),
-            TxType::Eip2930 => TxEnvelope::Eip2930(
-                TxEip2930 {
-                    chain_id: tx.chain_id,
-                    nonce: tx.nonce,
-                    gas_price: tx.gas_price.to::<u128>(),
-                    gas_limit: tx.gas,
-                    to: TxKind::from(tx.to),
-                    value: tx.value,
-                    input: tx.data,
+    fn from(merkle_tx: MerkleTx) -> Self {
+        let empty_sig = PrimitiveSignature::new(U256::ZERO, U256::ZERO, false);
+        let tx_envelop = match merkle_tx.tx_type {
+            TxType::Legacy => {
+                let inner_tx = TxLegacy {
+                    chain_id: Some(merkle_tx.chain_id),
+                    nonce: merkle_tx.nonce,
+                    gas_price: merkle_tx.gas_price.to::<u128>(),
+                    gas_limit: merkle_tx.gas,
+                    to: TxKind::from(merkle_tx.to),
+                    value: merkle_tx.value,
+                    input: merkle_tx.data,
+                };
+                TxEnvelope::Legacy(Signed::new_unchecked(inner_tx, empty_sig, merkle_tx.hash))
+            }
+            TxType::Eip2930 => {
+                let inner_tx = TxEip2930 {
+                    chain_id: merkle_tx.chain_id,
+                    nonce: merkle_tx.nonce,
+                    gas_price: merkle_tx.gas_price.to::<u128>(),
+                    gas_limit: merkle_tx.gas,
+                    to: TxKind::from(merkle_tx.to),
+                    value: merkle_tx.value,
+                    input: merkle_tx.data,
                     access_list: AccessList::default(),
-                }
-                .into_signed(PrimitiveSignature::new(U256::ZERO, U256::ZERO, false)),
-            ),
-            TxType::Eip1559 => TxEnvelope::Eip1559(
-                TxEip1559 {
-                    chain_id: tx.chain_id,
-                    nonce: tx.nonce,
-                    max_priority_fee_per_gas: tx.gas_fee_cap.to::<u128>(),
-                    max_fee_per_gas: tx.gas_tip_cap.to::<u128>(),
-                    gas_limit: tx.gas,
-                    to: TxKind::from(tx.to),
-                    value: tx.value,
+                };
+                TxEnvelope::Eip2930(Signed::new_unchecked(inner_tx, empty_sig, merkle_tx.hash))
+            }
+            TxType::Eip1559 => {
+                let inner_tx = TxEip1559 {
+                    chain_id: merkle_tx.chain_id,
+                    nonce: merkle_tx.nonce,
+                    max_priority_fee_per_gas: merkle_tx.gas_fee_cap.to::<u128>(),
+                    max_fee_per_gas: merkle_tx.gas_tip_cap.to::<u128>(),
+                    gas_limit: merkle_tx.gas,
+                    to: TxKind::from(merkle_tx.to),
+                    value: merkle_tx.value,
                     access_list: Default::default(),
-                    input: tx.data,
-                }
-                .into_signed(PrimitiveSignature::new(U256::ZERO, U256::ZERO, false)),
-            ),
-            TxType::Eip4844 => TxEnvelope::Eip4844(
-                TxEip4844Variant::TxEip4844(TxEip4844 {
-                    chain_id: tx.chain_id,
-                    nonce: tx.nonce,
-                    gas_limit: tx.gas,
-                    max_fee_per_gas: tx.gas_fee_cap.to::<u128>(),
-                    max_priority_fee_per_gas: tx.gas_tip_cap.to::<u128>(),
-                    to: tx.to.unwrap_or_default(),
-                    value: tx.value,
-                    input: tx.data,
+                    input: merkle_tx.data,
+                };
+                TxEnvelope::Eip1559(Signed::new_unchecked(inner_tx, empty_sig, merkle_tx.hash))
+            }
+            TxType::Eip4844 => {
+                let inner_tx = TxEip4844Variant::TxEip4844(TxEip4844 {
+                    chain_id: merkle_tx.chain_id,
+                    nonce: merkle_tx.nonce,
+                    gas_limit: merkle_tx.gas,
+                    max_fee_per_gas: merkle_tx.gas_fee_cap.to::<u128>(),
+                    max_priority_fee_per_gas: merkle_tx.gas_tip_cap.to::<u128>(),
+                    to: merkle_tx.to.unwrap_or_default(),
+                    value: merkle_tx.value,
+                    input: merkle_tx.data,
                     access_list: AccessList::default(),
                     blob_versioned_hashes: vec![],
                     max_fee_per_blob_gas: 0,
-                })
-                .into_signed(PrimitiveSignature::new(U256::ZERO, U256::ZERO, false)),
-            ),
-            TxType::Eip7702 => TxEnvelope::Eip7702(
-                TxEip7702 {
-                    chain_id: tx.chain_id,
-                    nonce: tx.nonce,
-                    gas_limit: tx.gas,
-                    max_fee_per_gas: tx.gas_fee_cap.to::<u128>(),
-                    max_priority_fee_per_gas: tx.gas_tip_cap.to::<u128>(),
-                    to: tx.to.unwrap_or_default(),
-                    value: tx.value,
-                    input: tx.data,
+                });
+                TxEnvelope::Eip4844(Signed::new_unchecked(inner_tx, empty_sig, merkle_tx.hash))
+            }
+            TxType::Eip7702 => {
+                let inner_tx = TxEip7702 {
+                    chain_id: merkle_tx.chain_id,
+                    nonce: merkle_tx.nonce,
+                    gas_limit: merkle_tx.gas,
+                    max_fee_per_gas: merkle_tx.gas_fee_cap.to::<u128>(),
+                    max_priority_fee_per_gas: merkle_tx.gas_tip_cap.to::<u128>(),
+                    to: merkle_tx.to.unwrap_or_default(),
+                    value: merkle_tx.value,
+                    input: merkle_tx.data,
                     access_list: AccessList::default(),
                     authorization_list: vec![],
-                }
-                .into_signed(PrimitiveSignature::new(U256::ZERO, U256::ZERO, false)),
-            ),
+                };
+                TxEnvelope::Eip7702(Signed::new_unchecked(inner_tx, empty_sig, merkle_tx.hash))
+            }
         };
         Transaction {
             inner: tx_envelop,
@@ -119,7 +122,7 @@ impl From<MerkleTx> for Transaction<TxEnvelope> {
             block_number: None,
             transaction_index: None,
             effective_gas_price: None,
-            from: tx.from,
+            from: merkle_tx.from,
         }
     }
 }
@@ -127,6 +130,7 @@ impl From<MerkleTx> for Transaction<TxEnvelope> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use alloy_network::TransactionResponse;
     use alloy_primitives::address;
     use std::str::FromStr;
 
@@ -162,6 +166,10 @@ mod tests {
         assert_eq!(auction.id, "96d87b2c-363d-4d2e-9c84-0bf676332419");
         assert_eq!(auction.chain_id, 1);
         assert_eq!(auction.transaction.from, address!("0xDFB1C86E93C0e07F747cF969eEE4cED350aC2cff"));
+        assert_eq!(
+            auction.transaction.hash,
+            TxHash::from_str("0xe1cd7d0a9a62f98fa779b68c6bf73adf9f68fb48723d1bfcc88d99248796bc12").unwrap()
+        );
     }
 
     #[test]
@@ -217,5 +225,6 @@ mod tests {
 
         let tx: Transaction<TxEnvelope> = merkle_tx.into();
         assert_eq!(tx.from, address!("0xD99e9d68e940B385FBDb3B63213763A218A9E2CF"));
+        assert_eq!(tx.tx_hash(), TxHash::from_str("0x2cc884af9ec0804ecaf0a44be62929478a2fb18f64c2a7de47dfce4ea64893f3").unwrap());
     }
 }
