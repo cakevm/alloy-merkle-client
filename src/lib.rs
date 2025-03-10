@@ -1,3 +1,4 @@
+use alloy_consensus::transaction::Recovered;
 use alloy_consensus::{Signed, TxEip1559, TxEip2930, TxEip4844, TxEip4844Variant, TxEip7702, TxEnvelope, TxLegacy, TxType};
 use alloy_primitives::Bytes;
 use alloy_primitives::{Address, ChainId, PrimitiveSignature, TxHash, TxKind, U256};
@@ -115,12 +116,11 @@ impl From<MerkleTx> for Transaction<TxEnvelope> {
             }
         };
         Transaction {
-            inner: tx_envelop,
+            inner: Recovered::new_unchecked(tx_envelop, merkle_tx.from),
             block_hash: None,
             block_number: None,
             transaction_index: None,
             effective_gas_price: None,
-            from: merkle_tx.from,
         }
     }
 }
@@ -222,7 +222,7 @@ mod tests {
         };
 
         let tx: Transaction<TxEnvelope> = merkle_tx.into();
-        assert_eq!(tx.from, address!("0xD99e9d68e940B385FBDb3B63213763A218A9E2CF"));
+        assert_eq!(tx.from(), address!("0xD99e9d68e940B385FBDb3B63213763A218A9E2CF"));
         assert_eq!(tx.tx_hash(), TxHash::from_str("0x2cc884af9ec0804ecaf0a44be62929478a2fb18f64c2a7de47dfce4ea64893f3").unwrap());
     }
 }
