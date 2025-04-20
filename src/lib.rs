@@ -1,7 +1,7 @@
 use alloy_consensus::transaction::Recovered;
 use alloy_consensus::{Signed, TxEip1559, TxEip2930, TxEip4844, TxEip4844Variant, TxEip7702, TxEnvelope, TxLegacy, TxType};
-use alloy_primitives::Bytes;
-use alloy_primitives::{Address, ChainId, PrimitiveSignature, TxHash, TxKind, U256};
+use alloy_primitives::{Address, ChainId, TxHash, TxKind, U256};
+use alloy_primitives::{Bytes, Signature};
 use alloy_rpc_types_eth::{AccessList, Transaction};
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
@@ -42,7 +42,7 @@ pub struct MerkleTxAuction {
 
 impl From<MerkleTx> for Transaction<TxEnvelope> {
     fn from(merkle_tx: MerkleTx) -> Self {
-        let empty_sig = PrimitiveSignature::new(U256::ZERO, U256::ZERO, false);
+        let empty_sig = Signature::new(U256::ZERO, U256::ZERO, false);
         let tx_envelop = match merkle_tx.tx_type {
             TxType::Legacy => {
                 let inner_tx = TxLegacy {
