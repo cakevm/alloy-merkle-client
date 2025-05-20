@@ -5,7 +5,6 @@ use alloy_primitives::{Bytes, Signature};
 use alloy_rpc_types_eth::{AccessList, Transaction};
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
-use serde_json::Value;
 
 pub const MERKLE_SEARCHERS_URL: &str = "wss://mempool.merkle.io/stream/auctions";
 
