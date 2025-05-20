@@ -12,12 +12,12 @@ tokio-tungstenite = { version = "0.26.1", features = ["native-tls"] }
 tracing = "0.1.41"
 
 # alloy
-alloy-consensus = "0.15.10"
-alloy-primitives = { version = "1.1.0", features = ["serde"] }
-alloy-rpc-types-eth = "0.15.10"
+alloy-consensus = "1.0.5"
+alloy-primitives = { version = "1.1.2", features = ["serde"] }
+alloy-rpc-types-eth = "1.0.5"
 
 [dev-dependencies]
-alloy-network = "0.15.10"
+alloy-network = "1.0.5"
 eyre = "0.6.12"
 futures-util = "0.3.31"
 tokio = { version = "1.43.0", features = ["full"] }
