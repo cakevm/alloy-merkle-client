@@ -13,6 +13,7 @@ pub const MERKLE_SEARCHERS_URL: &str = "wss://mempool.merkle.io/stream/auctions"
 pub struct MerkleTx {
     pub chain_id: u64,
     pub data: Bytes,
+    #[serde(deserialize_with = "deserialize_address")]
     pub from: Address,
     pub function_selector: Bytes,
     pub gas: u64,
@@ -21,8 +22,8 @@ pub struct MerkleTx {
     pub gas_tip_cap: U256,
     pub hash: TxHash,
     pub nonce: u64,
-    #[serde(deserialize_with = "deserialize_to")]
-    pub to: Option<Address>,
+    #[serde(deserialize_with = "deserialize_address")]
+    pub to: Address,
     #[serde(rename = "type")]
     pub tx_type: TxType,
     pub value: U256,
@@ -89,7 +90,7 @@ impl From<MerkleTx> for Transaction<TxEnvelope> {
                     gas_limit: merkle_tx.gas,
                     max_fee_per_gas: merkle_tx.gas_fee_cap.to::<u128>(),
                     max_priority_fee_per_gas: merkle_tx.gas_tip_cap.to::<u128>(),
-                    to: merkle_tx.to.unwrap_or_default(),
+                    to: merkle_tx.to,
                     value: merkle_tx.value,
                     input: merkle_tx.data,
                     access_list: AccessList::default(),
@@ -105,7 +106,7 @@ impl From<MerkleTx> for Transaction<TxEnvelope> {
                     gas_limit: merkle_tx.gas,
                     max_fee_per_gas: merkle_tx.gas_fee_cap.to::<u128>(),
                     max_priority_fee_per_gas: merkle_tx.gas_tip_cap.to::<u128>(),
-                    to: merkle_tx.to.unwrap_or_default(),
+                    to: merkle_tx.to,
                     value: merkle_tx.value,
                     input: merkle_tx.data,
                     access_list: AccessList::default(),
@@ -124,22 +125,17 @@ impl From<MerkleTx> for Transaction<TxEnvelope> {
     }
 }
 
-fn deserialize_to<'de, D>(
-    deserializer: D,
-) -> Result<Option<Address>, D::Error>
+fn deserialize_address<'de, D>(deserializer: D) -> Result<Address, D::Error>
 where
     D: Deserializer<'de>,
 {
     let s: String = String::deserialize(deserializer)?;
     if s.is_empty() {
-        // Treat empty string as None (likely for contract creation)
-        Ok(None)
+        Ok(Address::ZERO)
     } else {
-        // Try to parse as a normal address
-        s.parse::<Address>().map(Some).map_err(de::Error::custom)
+        s.parse::<Address>().map_err(de::Error::custom)
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -228,7 +224,7 @@ mod tests {
             gas_tip_cap: U256::ZERO,
             hash: TxHash::from_str("0x2cc884af9ec0804ecaf0a44be62929478a2fb18f64c2a7de47dfce4ea64893f3").unwrap(),
             nonce: 60,
-            to: Some(address!("0x9a15bB3a8FEc8d0d810691BAFE36f6e5d42360F7")),
+            to: address!("0x9a15bB3a8FEc8d0d810691BAFE36f6e5d42360F7"),
             tx_type: TxType::Legacy,
             value: U256::ZERO,
         };
