@@ -4,7 +4,7 @@ use alloy_primitives::{Address, ChainId, TxHash, TxKind, U256};
 use alloy_primitives::{Bytes, Signature};
 use alloy_rpc_types_eth::{AccessList, Transaction};
 use chrono::{DateTime, Utc};
-use serde::Deserialize;
+use serde::{de, Deserialize, Deserializer};
 
 pub const MERKLE_SEARCHERS_URL: &str = "wss://mempool.merkle.io/stream/auctions";
 
@@ -21,6 +21,7 @@ pub struct MerkleTx {
     pub gas_tip_cap: U256,
     pub hash: TxHash,
     pub nonce: u64,
+    #[serde(deserialize_with = "deserialize_to")]
     pub to: Option<Address>,
     #[serde(rename = "type")]
     pub tx_type: TxType,
@@ -122,6 +123,23 @@ impl From<MerkleTx> for Transaction<TxEnvelope> {
         }
     }
 }
+
+fn deserialize_to<'de, D>(
+    deserializer: D,
+) -> Result<Option<Address>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s: String = String::deserialize(deserializer)?;
+    if s.is_empty() {
+        // Treat empty string as None (likely for contract creation)
+        Ok(None)
+    } else {
+        // Try to parse as a normal address
+        s.parse::<Address>().map(Some).map_err(de::Error::custom)
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
