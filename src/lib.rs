@@ -5,7 +5,6 @@ use alloy_primitives::{Bytes, Signature};
 use alloy_rpc_types_eth::{AccessList, Transaction};
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
-use serde_json::Value;
 
 pub const MERKLE_SEARCHERS_URL: &str = "wss://mempool.merkle.io/stream/auctions";
 
@@ -21,7 +20,6 @@ pub struct MerkleTx {
     pub gas_price: U256,
     pub gas_tip_cap: U256,
     pub hash: TxHash,
-    pub logs: Vec<Value>,
     pub nonce: u64,
     pub to: Option<Address>,
     #[serde(rename = "type")]
@@ -151,8 +149,6 @@ mod tests {
                 "gas_price": "",
                 "gas_tip_cap": "",
                 "hash": "0xe1cd7d0a9a62f98fa779b68c6bf73adf9f68fb48723d1bfcc88d99248796bc12",
-                "logs":
-                [],
                 "nonce": 21,
                 "to": "0x9a15bB3a8FEc8d0d810691BAFE36f6e5d42360F7",
                 "type": 0,
@@ -188,7 +184,6 @@ mod tests {
                 "gas_price": "",
                 "gas_tip_cap": "",
                 "hash": "0x2cc884af9ec0804ecaf0a44be62929478a2fb18f64c2a7de47dfce4ea64893f3",
-                "logs": [],
                 "nonce": 60,
                 "to": "0x9a15bB3a8FEc8d0d810691BAFE36f6e5d42360F7",
                 "type": 2,
@@ -214,7 +209,6 @@ mod tests {
             gas_price: U256::ZERO,
             gas_tip_cap: U256::ZERO,
             hash: TxHash::from_str("0x2cc884af9ec0804ecaf0a44be62929478a2fb18f64c2a7de47dfce4ea64893f3").unwrap(),
-            logs: vec![],
             nonce: 60,
             to: Some(address!("0x9a15bB3a8FEc8d0d810691BAFE36f6e5d42360F7")),
             tx_type: TxType::Legacy,
