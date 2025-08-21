@@ -1,5 +1,5 @@
 use alloy_consensus::TxEnvelope;
-use alloy_merkle_client::{MerkleTxAuction, MERKLE_SEARCHERS_URL};
+use alloy_merkle_client::{MERKLE_SEARCHERS_URL, MerkleTxAuction};
 use alloy_rpc_types_eth::Transaction;
 use eyre::Result;
 use futures_util::StreamExt;
@@ -7,7 +7,7 @@ use tokio_tungstenite::connect_async;
 use tracing::info;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
-use tracing_subscriber::{fmt, EnvFilter};
+use tracing_subscriber::{EnvFilter, fmt};
 
 #[tokio::main]
 async fn main() -> Result<()> {

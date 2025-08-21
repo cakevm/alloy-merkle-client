@@ -4,7 +4,7 @@ use alloy_primitives::{Address, ChainId, TxHash, TxKind, U256};
 use alloy_primitives::{Bytes, Signature};
 use alloy_rpc_types_eth::{AccessList, Transaction};
 use chrono::{DateTime, Utc};
-use serde::{de, Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, de};
 
 pub const MERKLE_SEARCHERS_URL: &str = "wss://mempool.merkle.io/stream/auctions";
 
@@ -130,11 +130,7 @@ where
     D: Deserializer<'de>,
 {
     let s: String = String::deserialize(deserializer)?;
-    if s.is_empty() {
-        Ok(Address::ZERO)
-    } else {
-        s.parse::<Address>().map_err(de::Error::custom)
-    }
+    if s.is_empty() { Ok(Address::ZERO) } else { s.parse::<Address>().map_err(de::Error::custom) }
 }
 
 #[cfg(test)]
