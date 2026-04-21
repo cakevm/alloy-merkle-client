@@ -21,6 +21,8 @@ pub struct MerkleTx {
     pub gas_price: U256,
     pub gas_tip_cap: U256,
     pub hash: TxHash,
+    #[serde(default)]
+    pub logs: Vec<serde_json::Value>,
     pub nonce: u64,
     #[serde(deserialize_with = "deserialize_address")]
     pub to: Address,
@@ -73,12 +75,12 @@ impl From<MerkleTx> for Transaction<TxEnvelope> {
                 let inner_tx = TxEip1559 {
                     chain_id: merkle_tx.chain_id,
                     nonce: merkle_tx.nonce,
-                    max_priority_fee_per_gas: merkle_tx.gas_fee_cap.to::<u128>(),
-                    max_fee_per_gas: merkle_tx.gas_tip_cap.to::<u128>(),
+                    max_fee_per_gas: merkle_tx.gas_fee_cap.to::<u128>(),
+                    max_priority_fee_per_gas: merkle_tx.gas_tip_cap.to::<u128>(),
                     gas_limit: merkle_tx.gas,
                     to: TxKind::from(merkle_tx.to),
                     value: merkle_tx.value,
-                    access_list: Default::default(),
+                    access_list: AccessList::default(),
                     input: merkle_tx.data,
                 };
                 TxEnvelope::Eip1559(Signed::new_unchecked(inner_tx, empty_sig, merkle_tx.hash))
@@ -119,6 +121,7 @@ impl From<MerkleTx> for Transaction<TxEnvelope> {
             inner: Recovered::new_unchecked(tx_envelop, merkle_tx.from),
             block_hash: None,
             block_number: None,
+            block_timestamp: None,
             transaction_index: None,
             effective_gas_price: None,
         }
@@ -219,6 +222,7 @@ mod tests {
             gas_price: U256::ZERO,
             gas_tip_cap: U256::ZERO,
             hash: TxHash::from_str("0x2cc884af9ec0804ecaf0a44be62929478a2fb18f64c2a7de47dfce4ea64893f3").unwrap(),
+            logs: vec![],
             nonce: 60,
             to: address!("0x9a15bB3a8FEc8d0d810691BAFE36f6e5d42360F7"),
             tx_type: TxType::Legacy,
