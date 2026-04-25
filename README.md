@@ -16,4 +16,4 @@ See `subscribe_merkle_auction.rs` in [examples](./examples) for a full usage exa
 Many thanks to the [merkle.io](https://merkle.io)  to provide such an API. And many thanks to the [alloy-rs](https://github.com/alloy-rs) team.
 
 ## License
-This project is licensed under the [Apache 2.0](./LICENSE-APACHE) or [MIT](./LICENSE-MIT).
+This project is licensed under the [Apache 2.0](./LICENSE-APACHE) or [MIT](./LICENSE-MIT).a
